@@ -37,6 +37,8 @@ class Api
      */
     public function __construct(string $login = '', string $password = '')
     {
+        if (!mb_strlen($login) && !mb_strlen($password)) $this->setError('Логин и пароль пустой');
+
         if (!mb_strlen($login)) $this->setError('Логин пустой');
 
         if ($login !== getenv('API_LOGIN')) $this->setError('Логин не верный');
@@ -118,20 +120,18 @@ class Api
      */
     public function setMethod(array $methodList = []): void
     {
-        if (!count($methodList)) {
-            $this->setError('Не корректно указан метод api');
-        }
+        if (!count($methodList)) $this->setError('Не корректно указан метод api', 418);
 
         $__method = '';
 
-        foreach ($methodList as $key => $method){
+        foreach ($methodList as $key => $method) {
             $__method .= $key ? ucfirst($method) : lcfirst($method);
         }
 
         try {
             $this->{$__method}();
         } catch (\Throwable $e) {
-            $this->setError('Не корректно указан метод api');
+            $this->setError('Не корректно указано название метода api', 418);
         }
     }
 
@@ -146,10 +146,12 @@ class Api
 
     /**
      * @param string $message
+     * @param int $http_code
      * @return void
      */
-    #[NoReturn] private function setError(string $message = ''): void
+    #[NoReturn] private function setError(string $message = '', int $http_code = 401): void
     {
+        http_response_code($http_code);
         $this->setMessage($message);
         $this->setStatus(false);
         $this->__response();
@@ -185,9 +187,53 @@ class Api
      */
     private function syncUsers(): void
     {
-        $result = [
-            ['user' => 'name']
-        ];
-        $this->__response($result);
+        switch ($_SERVER['REQUEST_METHOD']) {
+            case 'GET':
+                $users = @json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/users.json'), true) ?? [];
+                $this->setMessage('Успешно');
+                $this->__response($users);
+                break;
+            default:
+                $this->setError('Не корректно указан HTTP-метод api', 405);
+                break;
+        }
+    }
+
+    /**
+     * @return void
+     */
+    private function uploadUsers(): void
+    {
+        switch ($_SERVER['REQUEST_METHOD']) {
+            case 'POST':
+                if (!@count($_REQUEST)) $this->setError('ожидается корректно заполненные поля userName, userEmail', 415);
+
+                if (!@mb_strlen($_REQUEST['userName'])) $this->setError('ожидается корректно заполненные поля userName, userEmail', 415);
+
+                if (!@mb_strlen($_REQUEST['userEmail'])) $this->setError('ожидается корректно заполненные поля userName, userEmail', 415);
+
+                $fileName = $_SERVER['DOCUMENT_ROOT'] . '/users.json';
+
+                $users = @json_decode(file_get_contents($fileName), true) ?? [];
+                $userId = (int)end($users)['user_id'] ?? 0;
+                $userId++;
+
+                $newUser = [
+                    'user_id' => $userId,
+                    'userName' => $_REQUEST['userName'],
+                    'userEmail' => $_REQUEST['userEmail'],
+                ];
+
+                $users[] = $newUser;
+
+                file_put_contents($fileName, json_encode($users, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+
+                $this->setMessage('Успешно');
+                $this->__response($newUser);
+                break;
+            default:
+                $this->setError('Не корректно указан HTTP-метод api', 405);
+                break;
+        }
     }
 }

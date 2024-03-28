@@ -1,0 +1,22 @@
+[
+    {
+        "user_id": 1,
+        "userName": "Виталий",
+        "userEmail": "email@test.ru"
+    },
+    {
+        "user_id": 2,
+        "userName": "Сергей",
+        "userEmail": "email2@test.ru"
+    },
+    {
+        "user_id": 3,
+        "userName": "Елена",
+        "userEmail": "email3@test.ru"
+    },
+    {
+        "user_id": 4,
+        "userName": "Вячеслав",
+        "userEmail": "email4@test.ru"
+    }
+]
