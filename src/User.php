@@ -60,7 +60,7 @@ class User
         if (!$id) {
             $users = @json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/users.json'), true) ?? [];
 
-            $id = (int)end($users)['user_id'] ?? 0;
+            $id = (int)@end($users)['user_id'] ?? 0;
 
             $id++;
         }
