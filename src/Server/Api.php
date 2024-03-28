@@ -2,6 +2,7 @@
 
 namespace App\Server;
 
+use App\User;
 use JetBrains\PhpStorm\NoReturn;
 
 class Api
@@ -212,21 +213,20 @@ class Api
 
                 if (!@mb_strlen($_REQUEST['userEmail'])) $this->setError('ожидается корректно заполненные поля userName, userEmail', 415);
 
-                $fileName = $_SERVER['DOCUMENT_ROOT'] . '/users.json';
+                $name = $_REQUEST['userName'];
 
-                $users = @json_decode(file_get_contents($fileName), true) ?? [];
-                $userId = (int)end($users)['user_id'] ?? 0;
-                $userId++;
+                $email = $_REQUEST['userEmail'];
 
-                $newUser = [
-                    'user_id' => $userId,
-                    'userName' => $_REQUEST['userName'],
-                    'userEmail' => $_REQUEST['userEmail'],
-                ];
+                $users = @json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/users.json'), true) ?? [];
+
+                if (in_array($email, array_column($users, 'userEmail'))) $this->setError('Пользователь с таким email уже существует', 415);
+
+                $newUser = new User($name, $email);
+                $newUser = $newUser->getValidData();
 
                 $users[] = $newUser;
 
-                file_put_contents($fileName, json_encode($users, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+                file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/users.json', json_encode($users, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
                 $this->setMessage('Успешно');
                 $this->__response($newUser);
