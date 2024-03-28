@@ -1,3 +1,10 @@
+AuthType Basic
+AuthUserFile D:\OSPanel\domains\test\api\.htpasswd
+AuthGroupFile /dev/null
+AuthName "Restricted Access"
+Require valid-user
+
+
 RewriteEngine on
 
 RewriteRule ^((?!index\.php).+)$ index.php [L]
