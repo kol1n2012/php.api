@@ -4,6 +4,8 @@ namespace App\Server;
 
 use App\User;
 use JetBrains\PhpStorm\NoReturn;
+use App\Server\Api\Route;
+use App\Server\Api\Methods as ApiMethods;
 
 class Api
 {
@@ -33,11 +35,31 @@ class Api
     private bool $status = false;
 
     /**
+     * @var array
+     */
+    private array $url = [];
+
+    /**
      * @param string $login
      * @param string $password
      */
     public function __construct(string $login = '', string $password = '')
     {
+        $this->setUrl();
+
+        $this->setLogin($login);
+
+        $this->setPassword($password);
+    }
+
+    /**
+     * @return void
+     */
+    private function checkAuth(): void
+    {
+        $login = $this->getLogin();
+        $password = $this->getPassword();
+
         if (!mb_strlen($login) && !mb_strlen($password)) $this->setError('Логин и пароль пустой');
 
         if (!mb_strlen($login)) $this->setError('Логин пустой');
@@ -50,9 +72,28 @@ class Api
 
         if ($password !== getenv('API_PASSWORD')) $this->setError('Пароль не верный');
 
-        $this->setPassword($password);
-
         $this->setToken();
+    }
+
+    /**
+     * @return void
+     */
+    private function setUrl(): void
+    {
+        $path = parse_url($_SERVER['REQUEST_URI'])['path'];
+
+        if (!mb_strlen($path)) return;
+
+        $path = explode('/', $path);
+        $path = array_filter($path, fn($p) => !in_array($p, ['api', '']));
+
+        if (!count($path)) return;
+
+        $path = array_values($path);
+
+        if (!count($path)) return;
+
+        $this->url = $path ?? [];
     }
 
     /**
@@ -116,23 +157,60 @@ class Api
     }
 
     /**
-     * @param array $methodList
+     * @param array $routingList
      * @return void
      */
-    public function setMethod(array $methodList = []): void
+    public function routing(array $routingList = []): void
     {
-        if (!count($methodList)) $this->setError('Не корректно указан метод api', 418);
+        $url = $this->getUrl();
 
-        $__method = '';
+        $__method = @array_shift($url) ?? "";
 
-        foreach ($methodList as $key => $method) {
-            $__method .= $key ? ucfirst($method) : lcfirst($method);
+        $__route = false;
+
+        $data = [];
+
+        foreach ($routingList as $method => $route) {
+
+            if (false === $route instanceof Route) continue;
+
+            if (str_contains($method, $__method)) {
+
+                $__route = $route;
+
+                $__additional = str_replace(sprintf("/%s", $__method), "", $method);
+                $__additional = array_values(array_filter(@explode("/", $__additional) ?? []));
+
+                if (count($__additional) && count($__additional) === count($url)) {
+                    foreach ($__additional as $key => $item) {
+                        $item = str_replace("%", "", $item);
+                        if (in_array($item, ['user_id'])) {
+                            $data[$item] = (int)$url[$key];
+                        } else {
+                            $data[$item] = $url[$key];
+                        }
+                    }
+                }
+            }
         }
 
-        try {
-            $this->{$__method}();
-        } catch (\Throwable $e) {
-            $this->setError('Не корректно указано название метода api', 418);
+        if ($__route) {
+            if ($__route->isAuth()) $this->checkAuth();
+
+            try {
+                $data = array_merge($data, $__route->getData());
+
+                if (count($data)) {
+                    $this->{$__method}($data);
+                } else {
+                    $this->{$__method}();
+                }
+
+            } catch (\Throwable $e) {
+                $this->setError('Не корректные данные для вызова метода api', 418);
+            }
+        } else {
+            $this->setError('Не корректно указан метод api', 418);
         }
     }
 
@@ -160,6 +238,14 @@ class Api
     }
 
     /**
+     * @return array
+     */
+    private function getUrl(): array
+    {
+        return $this->url ?? [];
+    }
+
+    /**
      * @return string
      */
     public function getToken(): string
@@ -184,56 +270,21 @@ class Api
     }
 
     /**
-     * @return void
+     * @return string
      */
-    private function syncUsers(): void
+    private function getLogin(): string
     {
-        switch ($_SERVER['REQUEST_METHOD']) {
-            case 'GET':
-                $users = @json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/users.json'), true) ?? [];
-                $this->setMessage('Успешно');
-                $this->__response($users);
-                break;
-            default:
-                $this->setError('Не корректно указан HTTP-метод api', 405);
-                break;
-        }
+        return $this->login ?? "";
     }
 
     /**
-     * @return void
+     * @return string
      */
-    private function uploadUsers(): void
+    private function getPassword(): string
     {
-        switch ($_SERVER['REQUEST_METHOD']) {
-            case 'POST':
-                if (!@count($_REQUEST)) $this->setError('ожидается корректно заполненные поля userName, userEmail', 415);
-
-                if (!@mb_strlen($_REQUEST['userName'])) $this->setError('ожидается корректно заполненные поля userName, userEmail', 415);
-
-                if (!@mb_strlen($_REQUEST['userEmail'])) $this->setError('ожидается корректно заполненные поля userName, userEmail', 415);
-
-                $name = $_REQUEST['userName'];
-
-                $email = $_REQUEST['userEmail'];
-
-                $users = @json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/users.json'), true) ?? [];
-
-                if (in_array($email, array_column($users, 'userEmail'))) $this->setError('Пользователь с таким email уже существует', 415);
-
-                $newUser = new User($name, $email);
-                $newUser = $newUser->getValidData();
-
-                $users[] = $newUser;
-
-                file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/users.json', json_encode($users, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-
-                $this->setMessage('Успешно');
-                $this->__response($newUser);
-                break;
-            default:
-                $this->setError('Не корректно указан HTTP-метод api', 405);
-                break;
-        }
+        return $this->password ?? "";
     }
+
+
+    use ApiMethods;
 }

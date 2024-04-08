@@ -22,6 +22,7 @@ class User
     /**
      * @param string $name
      * @param string $email
+     * @param int $id
      */
     public function __construct(string $name = '', string $email = '', int $id = 0)
     {
