@@ -29,6 +29,40 @@ trait Methods
      * @param array $data
      * @return void
      */
+    private function getUser(array $data = []): void
+    {
+        switch ($_SERVER['REQUEST_METHOD']) {
+            case 'GET':
+
+                if (!@count($data)) $this->setError('ожидается корректно заполненные поля user_id', 415);
+
+                if (!@$data['user_id']) $this->setError('ожидается корректно заполненные поля user_id', 415);
+
+                $id = $data['user_id'];
+
+                $users = @json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/users.json'), true) ?? [];
+
+                if (!in_array($id, array_column($users, 'user_id'))) $this->setError('Пользователь с таким user_id не существует', 415);
+
+                $users = array_filter($users, function ($user) use($id){
+                    return $user['user_id'] === $id;
+                });
+
+                $users = array_shift($users) ?? [];
+
+                $this->setMessage('Успешно');
+                $this->__response($users);
+                break;
+            default:
+                $this->setError('Не корректно указан HTTP-метод api', 405);
+                break;
+        }
+    }
+
+    /**
+     * @param array $data
+     * @return void
+     */
     private function addUser(array $data = []): void
     {
         switch ($_SERVER['REQUEST_METHOD']) {

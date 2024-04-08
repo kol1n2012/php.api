@@ -21,6 +21,7 @@ $password = $_SERVER['PHP_AUTH_PW'] ?? ''; //Password
 
 (new Api($login, $password))->routing([
     '/getUsers' => new Route(['GET', 'POST'], false, $_REQUEST),
+    '/getUser/%user_id%' => new Route('GET', true),
     '/addUser' => new Route('POST', true, $_REQUEST),
     '/deleteUser/%user_id%' => new Route('DELETE', true),
 ]);
