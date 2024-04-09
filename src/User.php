@@ -24,11 +24,11 @@ class User
      * @param string $email
      * @param int $id
      */
-    public function __construct(string $name = '', string $email = '', int $id = 0)
+    public function __construct(int $id = 0, string $name = '', string $email = '')
     {
+        $this->setId($id);
         $this->setName($name);
         $this->setEmail($email);
-        $this->setId($id);
     }
 
     /**
@@ -103,5 +103,13 @@ class User
     public function getEmail(): string
     {
         return $this->email ?? '';
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return (string)json_encode($this->getValidData(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 }

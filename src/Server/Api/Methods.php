@@ -48,10 +48,15 @@ trait Methods
                     return $user['id'] === $id;
                 });
 
-                $users = array_shift($users) ?? [];
+                if($user = array_shift($users)){
+                    $user = new User($user['id'],$user['name'],$user['email']);
 
-                $this->setMessage('Успешно');
-                $this->__response($users);
+                    $this->setMessage('Успешно');
+                    $this->__response("$user");
+                }else{
+                    $this->setError('Пользователь не найден', 405);
+                }
+
                 break;
             default:
                 $this->setError('Не корректно указан HTTP-метод api', 405);
@@ -83,15 +88,14 @@ trait Methods
 
                 if (in_array($email, array_column($users, 'email'))) $this->setError('Пользователь с таким email уже существует', 415);
 
-                $newUser = new User($name, $email);
-                $newUser = $newUser->getValidData();
+                $user = new User(0, $name, $email);
 
-                $users[] = $newUser;
+                $users[] = $user->getValidData();
 
                 file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/users.json', json_encode($users, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
                 $this->setMessage('Успешно');
-                $this->__response($newUser);
+                $this->__response("$user");
                 break;
             default:
                 $this->setError('Не корректно указан HTTP-метод api', 405);

@@ -97,14 +97,18 @@ class Api
     }
 
     /**
-     * @param bool|array $result
+     * @param string $output
      * @return void
      */
-    private function __response(bool|array $result = false): void
+    private function __response(string $output = '[]'): void
     {
         header('Content-Type: application/json; charset=utf-8');
 
-        echo json_encode(['status' => $this->getStatus(), 'message' => $this->getMessage(), 'result' => $result], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $result = json_encode(['status' => $this->getStatus(), 'message' => $this->getMessage(), 'result' => 'json_valid'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+        $result = str_replace("\"json_valid\"", '%s', $result);
+
+        echo sprintf($result, $output);
     }
 
     /**
@@ -207,7 +211,11 @@ class Api
                 }
 
             } catch (\Throwable $e) {
-                $this->setError('Не корректные данные для вызова метода api', 418);
+                if(filter_var(@getenv('DEBUG'), FILTER_VALIDATE_BOOLEAN)){
+                    dump($e);
+                }
+
+                $this->setError('метод в api не найден', 418);
             }
         } else {
             $this->setError('Не корректно указан метод api', 418);
