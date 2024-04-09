@@ -2,7 +2,7 @@
 
 namespace App\Server;
 
-use App\User;
+use App\HTTP\Response;
 use JetBrains\PhpStorm\NoReturn;
 use App\Server\Api\Route;
 use App\Server\Api\Methods as ApiMethods;
@@ -102,13 +102,12 @@ class Api
      */
     private function __response(string $output = '[]'): void
     {
-        header('Content-Type: application/json; charset=utf-8');
+        $response = Response::getInstance();
 
-        $result = json_encode(['status' => $this->getStatus(), 'message' => $this->getMessage(), 'result' => 'json_valid'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-
-        $result = str_replace("\"json_valid\"", '%s', $result);
-
-        echo sprintf($result, $output);
+        $response->setHeaders(['Content-Type' => 'application/json; charset=utf-8']);
+        $response->setBody($output);
+        $response->setStatus($this->getStatus());
+        $response->setMessage($this->getMessage());
     }
 
     /**
