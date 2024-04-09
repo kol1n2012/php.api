@@ -112,4 +112,9 @@ class User
     {
         return (string)json_encode($this->getValidData(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
+
+    public function delete()
+    {
+        (new UserCollection(['filter' => ['!id' => $this->getId()]]))->__save();
+    }
 }

@@ -118,18 +118,18 @@ trait Methods
 
                 $id = $data['id'];
 
-                $users = @json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/users.json'), true) ?? [];
+                $users = new UserCollection(['filter' => ['id' => $id]]);
 
-                if (!in_array($id, array_column($users, 'id'))) $this->setError('Пользователь с таким id не существует', 415);
+                if(count($users = $users->getCollection())){
+                    $user = array_shift($users);
 
-                $users = array_filter($users, function ($user) use($id){
-                    return $user['id'] !== $id;
-                });
+                    $user->delete();
 
-                file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/users.json', json_encode($users, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-
-                $this->setMessage('Успешно');
-                $this->__response([]);
+                    $this->setMessage('Успешно');
+                    $this->__response("$user");
+                }else{
+                    $this->setError('Пользователь с таким id не существует', 415);
+                }
                 break;
             default:
                 $this->setError('Не корректно указан HTTP-метод api', 405);

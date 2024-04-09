@@ -4,6 +4,8 @@ namespace App;
 
 class CollectionFile
 {
+    private string $fileName;
+
     /**
      * @param string $fileName
      * @return void
@@ -11,6 +13,8 @@ class CollectionFile
     protected function setCollection(string $fileName = ''): void
     {
         if (!mb_strlen($fileName)) return;
+
+        $this->fileName = $fileName;
 
         $collection = @json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/' . $fileName), true) ?? [];
 
@@ -32,26 +36,41 @@ class CollectionFile
 
             $return = false;
 
+            $symbolList = ['not' => '!'];
+
             foreach ($filter as $key => $f) {
                 if ($return) continue;
+
+                $symbol = '';
+
+                if(str_contains($key, $symbolList['not'])){
+                    $symbol = $symbolList['not'];
+                }
 
                 $value = '';
 
                 switch ($key){
-                    case 'id':
+                    case $symbol.'id':
                         $value = $item->getId();
                         break;
-                    case 'name':
+                    case $symbol.'name':
                         $value = $item->getName();
                         break;
-                    case 'email':
+                    case $symbol.'email':
                         $value = $item->getEmail();
                         break;
                 }
 
-                if ($value == $f || in_array($value, is_array($f) ? $f : [$f])) {
-                    $return = true;
+                if($symbol === $symbolList['not']){
+                    if ($value !== $f || !in_array($value, is_array($f) ? $f : [$f])) {
+                        $return = true;
+                    }
+                }else{
+                    if ($value == $f || in_array($value, is_array($f) ? $f : [$f])) {
+                        $return = true;
+                    }
                 }
+
             }
 
             return $return ?? false;
@@ -62,16 +81,35 @@ class CollectionFile
         $this->collection = $collection;
     }
 
+    /**
+     * @param mixed $order
+     * @return void
+     */
     protected function setOrder(mixed $order)
     {
     }
 
+    /**
+     * @param mixed $sort
+     * @return void
+     */
     protected function setSort(mixed $sort)
     {
     }
 
+    /**
+     * @return array
+     */
     public function getCollection(): array
     {
         return $this->collection ?? [];
+    }
+
+    /**
+     * @return void
+     */
+    public function __save(): void
+    {
+        file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/'.$this->fileName, json_encode("$this", JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
     }
 }
