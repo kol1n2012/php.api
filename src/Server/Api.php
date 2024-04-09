@@ -211,7 +211,7 @@ class Api
 
             } catch (\Throwable $e) {
                 if (filter_var(@getenv('DEBUG'), FILTER_VALIDATE_BOOLEAN)) {
-                    dump($e);
+                    var_dump($e);
                 }
 
                 $this->setError('метод в api не найден', 418);

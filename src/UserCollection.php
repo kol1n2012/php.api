@@ -35,9 +35,9 @@ class UserCollection extends CollectionFile
             $this->setFilter($filter);
         }
 
-        //TODO order collection
-        if ($order = @$data['order']) {
-            $this->setOrder($order);
+        //TODO select collection
+        if ($select = @$data['select']) {
+            $this->setSelect($select);
         }
 
         //TODO sort collection
