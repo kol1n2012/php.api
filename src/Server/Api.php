@@ -184,7 +184,7 @@ class Api
                 if (count($__additional) && count($__additional) === count($url)) {
                     foreach ($__additional as $key => $item) {
                         $item = str_replace("%", "", $item);
-                        if (in_array($item, ['user_id'])) {
+                        if (in_array($item, ['id'])) {
                             $data[$item] = (int)$url[$key];
                         } else {
                             $data[$item] = $url[$key];

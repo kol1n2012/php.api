@@ -61,7 +61,7 @@ class User
         if (!$id) {
             $users = @json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/users.json'), true) ?? [];
 
-            $id = (int)@end($users)['user_id'] ?? 0;
+            $id = (int)@end($users)['id'] ?? 0;
 
             $id++;
         }
@@ -75,9 +75,9 @@ class User
     public function getValidData(): array
     {
         return [
-            'user_id' => $this->getId(),
-            'userName' => $this->getName(),
-            'userEmail' => $this->getEmail(),
+            'id' => $this->getId(),
+            'name' => $this->getName(),
+            'email' => $this->getEmail(),
         ];
     }
 
