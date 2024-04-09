@@ -3,6 +3,8 @@
 namespace App\Server\Api;
 
 use App\User;
+use App\UserCollection;
+use App\HTTP\Response;
 
 trait Methods
 {
@@ -15,8 +17,11 @@ trait Methods
     {
         switch ($_SERVER['REQUEST_METHOD']) {
             case 'GET':
-                $users = @json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/users.json'), true) ?? [];
+                $users = new UserCollection();
+
+                $this->setStatus(true);
                 $this->setMessage('Успешно');
+
                 $this->__response($users);
                 break;
             default:
@@ -40,21 +45,16 @@ trait Methods
 
                 $id = $data['id'];
 
-                $users = @json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/users.json'), true) ?? [];
+                $users = new UserCollection(['filter' => ['id' => $id]]);
 
-                if (!in_array($id, array_column($users, 'id'))) $this->setError('Пользователь с таким id не существует', 415);
+                if(count($users = $users->getCollection())){
+                    $user = array_shift($users);
 
-                $users = array_filter($users, function ($user) use($id){
-                    return $user['id'] === $id;
-                });
-
-                if($user = array_shift($users)){
-                    $user = new User($user['id'],$user['name'],$user['email']);
-
+                    $this->setStatus(true);
                     $this->setMessage('Успешно');
                     $this->__response("$user");
                 }else{
-                    $this->setError('Пользователь не найден', 405);
+                    $this->setError('Пользователь с таким id не существует', 415);
                 }
 
                 break;
