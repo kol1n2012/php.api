@@ -62,13 +62,15 @@ final class Response
     {
         $output = $this->getBody();
 
-        foreach ($this->getHeaders() as $header => $value){
+        foreach ($this->getHeaders() as $header => $value) {
             header("$header: $value");
         }
 
         $result = json_encode(['status' => $this->getStatus(), 'message' => $this->getMessage(), 'result' => 'json_valid'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         $result = str_replace("\"json_valid\"", '%s', $result);
+
+        http_response_code($this->getCode());
 
         echo sprintf($result, $output);
     }
@@ -134,6 +136,14 @@ final class Response
     }
 
     /**
+     * @return int
+     */
+    private function getCode(): int
+    {
+        return $this->code ?? 200;
+    }
+
+    /**
      * @return array
      */
     private function getHeaders(): array
@@ -146,7 +156,7 @@ final class Response
      */
     private function getBody(): string
     {
-        return $this->body ?? '';
+        return $this->body ?? '[]';
     }
 
     /**
@@ -169,4 +179,5 @@ final class Response
     {
         $this->send();
     }
+
 }

@@ -210,7 +210,7 @@ class Api
                 }
 
             } catch (\Throwable $e) {
-                if(filter_var(@getenv('DEBUG'), FILTER_VALIDATE_BOOLEAN)){
+                if (filter_var(@getenv('DEBUG'), FILTER_VALIDATE_BOOLEAN)) {
                     dump($e);
                 }
 
@@ -237,10 +237,11 @@ class Api
      */
     #[NoReturn] private function setError(string $message = '', int $http_code = 401): void
     {
-        http_response_code($http_code);
-        $this->setMessage($message);
-        $this->setStatus(false);
-        $this->__response();
+        $response = Response::getInstance($http_code);
+
+        $response->setHeaders(['Content-Type' => 'application/json; charset=utf-8']);
+        $response->setMessage($message);
+
         die();
     }
 

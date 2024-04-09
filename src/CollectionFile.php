@@ -18,7 +18,7 @@ class CollectionFile
 
         $collection = @json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/' . $fileName), true) ?? [];
 
-        foreach ($collection as $item){
+        foreach ($collection as $item) {
             $this->collection[] = $this->__convert($item);
         }
 
@@ -43,29 +43,29 @@ class CollectionFile
 
                 $symbol = '';
 
-                if(str_contains($key, $symbolList['not'])){
+                if (str_contains($key, $symbolList['not'])) {
                     $symbol = $symbolList['not'];
                 }
 
                 $value = '';
 
-                switch ($key){
-                    case $symbol.'id':
+                switch ($key) {
+                    case $symbol . 'id':
                         $value = $item->getId();
                         break;
-                    case $symbol.'name':
+                    case $symbol . 'name':
                         $value = $item->getName();
                         break;
-                    case $symbol.'email':
+                    case $symbol . 'email':
                         $value = $item->getEmail();
                         break;
                 }
 
-                if($symbol === $symbolList['not']){
+                if ($symbol === $symbolList['not']) {
                     if ($value !== $f || !in_array($value, is_array($f) ? $f : [$f])) {
                         $return = true;
                     }
-                }else{
+                } else {
                     if ($value == $f || in_array($value, is_array($f) ? $f : [$f])) {
                         $return = true;
                     }
@@ -110,6 +110,6 @@ class CollectionFile
      */
     public function __save(): void
     {
-        file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/'.$this->fileName, json_encode("$this", JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/' . $this->fileName, json_encode("$this", JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
     }
 }

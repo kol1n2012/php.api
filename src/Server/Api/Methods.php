@@ -47,13 +47,13 @@ trait Methods
 
                 $users = new UserCollection(['filter' => ['id' => $id]]);
 
-                if(count($users = $users->getCollection())){
+                if (count($users = $users->getCollection())) {
                     $user = array_shift($users);
 
                     $this->setStatus(true);
                     $this->setMessage('Успешно');
                     $this->__response("$user");
-                }else{
+                } else {
                     $this->setError('Пользователь с таким id не существует', 415);
                 }
 
@@ -120,14 +120,14 @@ trait Methods
 
                 $users = new UserCollection(['filter' => ['id' => $id]]);
 
-                if(count($users = $users->getCollection())){
+                if (count($users = $users->getCollection())) {
                     $user = array_shift($users);
 
                     $user->delete();
 
                     $this->setMessage('Успешно');
                     $this->__response("$user");
-                }else{
+                } else {
                     $this->setError('Пользователь с таким id не существует', 415);
                 }
                 break;
