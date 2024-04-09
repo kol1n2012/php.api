@@ -52,7 +52,11 @@ class UserCollection extends CollectionFile
      */
     public function __toString(): string
     {
-        return (string)json_encode($this->getCollection(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $collection = $this->getCollection();
+
+        $collection = implode(',', $collection);
+
+        return "[$collection]";
     }
 
     /**
