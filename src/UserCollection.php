@@ -67,4 +67,35 @@ class UserCollection extends CollectionFile
     {
         return new User($user['id'], $user['name'], $user['email']);
     }
+
+    /**
+     * @param string $email
+     * @return bool
+     */
+    public function checkEmail(string $email = ''): bool
+    {
+        $mailList = array_map(fn($user) => $user->getEmail(), $this->getCollection());
+
+        if (in_array($email, $mailList)) $return = true;
+
+        return $return ?? false;
+    }
+
+    /**
+     * @param User $user
+     * @return void
+     */
+    public function add(User $user = new User): void
+    {
+        $this->collection[] = $user;
+
+        $this->__save();
+    }
+
+    public function delete(User $user = new User): void
+    {
+        $this->setFilter(['!id' => $user->getId()]);
+
+        $this->__save();
+    }
 }

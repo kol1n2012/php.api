@@ -1,10 +1,4 @@
 <?php
-if(filter_var(@getenv('DEBUG'), FILTER_VALIDATE_BOOLEAN)) {
-    ini_set('display_errors', 1);
-    ini_set('display_startup_errors', 1);
-    error_reporting(E_ALL);
-}
-
 spl_autoload_register(function ($class_name) {
     $class_name = str_replace('App\\', '', $class_name);
     require_once '../src/' . $class_name . '.php';
@@ -13,17 +7,33 @@ spl_autoload_register(function ($class_name) {
 use App\Controller\DotEnvEnvironment;
 use App\Server\Api;
 use App\Server\Api\Route;
+use App\HTTP\Request;
 
 (new DotEnvEnvironment)->load(__DIR__ . '/../');
+
+if(filter_var(@getenv('DEBUG'), FILTER_VALIDATE_BOOLEAN)) {
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
+}
 
 //Basic Auth
 $login = $_SERVER['PHP_AUTH_USER'] ?? ''; //Username
 
 $password = $_SERVER['PHP_AUTH_PW'] ?? ''; //Password
 
+$request = Request::getInstance();
+
 (new Api($login, $password))->routing([
-    '/getUsers' => new Route(['GET', 'POST'], false, $_REQUEST),
+    '/getUsers' => new Route(['GET', 'POST'], false, [
+        'filter' => $request->filter,
+        'sort' => $request->sort,
+        'select' => $request->select,
+        ]),
     '/getUser/%id%' => new Route('GET', true),
-    '/addUser' => new Route('POST', true, $_REQUEST),
+    '/addUser' => new Route('POST', true, [
+        'name' => $request->name,
+        'email' => $request->email,
+    ]),
     '/deleteUser/%id%' => new Route('DELETE', true),
 ]);

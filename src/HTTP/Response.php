@@ -12,17 +12,17 @@ final class Response
     /**
      * @var int
      */
-    protected static int $code;
+    protected int $code;
 
     /**
      * @var string
      */
-    protected static string $body;
+    protected string $body;
 
     /**
      * @var array
      */
-    protected static array $headers;
+    protected array $headers;
 
     /**
      * @var string

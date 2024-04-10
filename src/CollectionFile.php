@@ -110,6 +110,6 @@ class CollectionFile
      */
     public function __save(): void
     {
-        file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/' . $this->fileName, json_encode("$this", JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/' . $this->fileName, "$this");
     }
 }

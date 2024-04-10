@@ -2,9 +2,9 @@
 
 namespace App\Server\Api;
 
+use App\HTTP\Request;
 use App\User;
 use App\UserCollection;
-use App\HTTP\Response;
 
 trait Methods
 {
@@ -15,7 +15,7 @@ trait Methods
      */
     private function getUsers(array $data = []): void
     {
-        switch ($_SERVER['REQUEST_METHOD']) {
+        switch ((Request::getInstance())->getMethod()) {
             case 'GET':
                 $users = new UserCollection();
 
@@ -36,7 +36,7 @@ trait Methods
      */
     private function getUser(array $data = []): void
     {
-        switch ($_SERVER['REQUEST_METHOD']) {
+        switch ((Request::getInstance())->getMethod()) {
             case 'GET':
 
                 if (!@count($data)) $this->setError('ожидается корректно заполненные поля id', 415);
@@ -70,7 +70,7 @@ trait Methods
      */
     private function addUser(array $data = []): void
     {
-        switch ($_SERVER['REQUEST_METHOD']) {
+        switch ((Request::getInstance())->getMethod()) {
             case 'POST':
                 $errorMessage = 'ожидается корректно заполненные поля name, email';
 
@@ -84,15 +84,13 @@ trait Methods
 
                 $email = $data['email'];
 
-                $users = @json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/users.json'), true) ?? [];
+                $users = new UserCollection();
 
-                if (in_array($email, array_column($users, 'email'))) $this->setError('Пользователь с таким email уже существует', 415);
+                if ($users->checkEmail($email)) $this->setError('Пользователь с таким email уже существует', 415);
 
                 $user = new User(0, $name, $email);
 
-                $users[] = $user->getValidData();
-
-                file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/users.json', json_encode($users, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+                $users->add($user);
 
                 $this->setMessage('Успешно');
                 $this->__response("$user");
@@ -109,7 +107,7 @@ trait Methods
      */
     private function deleteUser(array $data = []): void
     {
-        switch ($_SERVER['REQUEST_METHOD']) {
+        switch ((Request::getInstance())->getMethod()) {
             case 'DELETE':
                 $errorMessage = 'ожидается корректно заполненные поля id';
                 if (!@count($data)) $this->setError($errorMessage, 415);
@@ -123,7 +121,7 @@ trait Methods
                 if (count($users = $users->getCollection())) {
                     $user = array_shift($users);
 
-                    $user->delete();
+                    (new UserCollection())->delete($user);
 
                     $this->setMessage('Успешно');
                     $this->__response("$user");
