@@ -4,19 +4,22 @@ namespace App\Model\Sourse;
 
 class File
 {
-    private string $fileName;
+    /**
+     * @var string
+     */
+    private string $sourse;
 
     /**
-     * @param string $fileName
+     * @param string $sourse
      * @return void
      */
-    protected function setCollection(string $fileName = ''): void
+    protected function setCollection(string $sourse = ''): void
     {
-        if (!mb_strlen($fileName)) return;
+        if (!mb_strlen($sourse)) return;
 
-        $this->fileName = $fileName;
+        $this->sourse = $sourse;
 
-        $collection = @json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/' . $fileName), true) ?? [];
+        $collection = @json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/' . $sourse.'.json'), true) ?? [];
 
         foreach ($collection as $item) {
             $this->collection[] = $this->__convert($item);
@@ -98,6 +101,14 @@ class File
     }
 
     /**
+     * @param int $limit
+     * @return void
+     */
+    protected function setLimit(int $limit)
+    {
+    }
+
+    /**
      * @return array
      */
     public function getCollection(): array
@@ -106,10 +117,32 @@ class File
     }
 
     /**
+     * @param $item
      * @return void
      */
-    public function __save(): void
+    protected function __add($item): void
     {
-        file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/' . $this->fileName, "$this");
+        $this->collection[] = $item;
+
+        $this->__save();
+    }
+
+    /**
+     * @param int $id
+     * @return void
+     */
+    protected function __delete(int $id = 0): void
+    {
+        $this->setFilter(['!id' => $id]);
+
+        $this->__save();
+    }
+
+    /**
+     * @return void
+     */
+    private function __save(): void
+    {
+        file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/' . $this->sourse.'.json', "$this");
     }
 }

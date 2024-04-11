@@ -4,9 +4,11 @@ namespace App\Model;
 
 use App\Entities\User;
 use App\Model\Sourse\File as FromFile;
+use App\Model\Sourse\MySQL as FromMySQL;
 
 
-class Users extends FromFile
+//class Users extends FromFile
+class Users extends FromMySQL
 {
     /**
      * @var array
@@ -33,7 +35,7 @@ class Users extends FromFile
      */
     public function __construct(array $data = [])
     {
-        $this->setCollection('users.json');
+        $this->setCollection('users');
 
         if ($filter = @$data['filter']) {
             $this->setFilter($filter);
@@ -91,15 +93,15 @@ class Users extends FromFile
      */
     public function add(User $user = new User): void
     {
-        $this->collection[] = $user;
-
-        $this->__save();
+        parent::__add(['name' => $user->getName(), 'email' => $user->getEmail()]);
     }
 
+    /**
+     * @param User $user
+     * @return void
+     */
     public function delete(User $user = new User): void
     {
-        $this->setFilter(['!id' => $user->getId()]);
-
-        $this->__save();
+        parent::__delete($user->getId());
     }
 }

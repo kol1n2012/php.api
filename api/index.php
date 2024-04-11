@@ -25,6 +25,7 @@ $request = Request::getInstance();
         'filter' => $request->filter,
         'sort' => $request->sort,
         'select' => $request->select,
+        'limit' => $request->limit,
     ]),
     '/getUser/%id%' => new Route('GET', true),
     '/addUser' => new Route('POST', true, [
