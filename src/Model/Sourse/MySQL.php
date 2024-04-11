@@ -123,12 +123,16 @@ class MySQL
 
 
     /**
-     * @param array $data
+     * @param $data
      * @return void
      */
-    protected function __add(array $data = []): void
+    protected function __add($data): void
     {
-        if(!count($data)) return;
+        $data = $data->getValidData();
+
+        if(isset($data['id'])){
+            unset($data['id']);
+        }
 
         $sql = sprintf("INSERT INTO %s ", $this->sourse);
 

@@ -7,8 +7,8 @@ use App\Model\Sourse\File as FromFile;
 use App\Model\Sourse\MySQL as FromMySQL;
 
 
-//class Users extends FromFile
-class Users extends FromMySQL
+class Users extends FromFile
+//class Users extends FromMySQL
 {
     /**
      * @var array
@@ -93,7 +93,7 @@ class Users extends FromMySQL
      */
     public function add(User $user = new User): void
     {
-        parent::__add(['name' => $user->getName(), 'email' => $user->getEmail()]);
+        parent::__add($user);
     }
 
     /**
