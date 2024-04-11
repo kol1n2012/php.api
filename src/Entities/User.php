@@ -1,6 +1,8 @@
 <?php
 
-namespace App;
+namespace App\Entities;
+
+use App\Model\Users;
 
 class User
 {
@@ -113,8 +115,11 @@ class User
         return (string)json_encode($this->getValidData(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
-    public function delete()
+    /**
+     * @return void
+     */
+    public function delete(): void
     {
-        (new UserCollection(['filter' => ['!id' => $this->getId()]]))->__save();
+        (new Users(['filter' => ['!id' => $this->getId()]]))->__save();
     }
 }

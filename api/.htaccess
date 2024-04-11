@@ -1,13 +1,3 @@
-AuthType Basic
-AuthUserFile D:\OSPanel\domains\test\api\.htpasswd
-AuthGroupFile /dev/null
-AuthName "Restricted Access"
-<limit DELETE POST PUT>
-Require valid-user
-</limit>
-
-
-
 RewriteEngine on
 
 RewriteRule ^((?!index\.php).+)$ index.php [L]

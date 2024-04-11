@@ -1,8 +1,12 @@
 <?php
 
-namespace App;
+namespace App\Model;
 
-class UserCollection extends CollectionFile
+use App\Entities\User;
+use App\Model\Sourse\File as FromFile;
+
+
+class Users extends FromFile
 {
     /**
      * @var array

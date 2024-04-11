@@ -11,29 +11,26 @@ use App\HTTP\Request;
 
 (new DotEnvEnvironment)->load(__DIR__ . '/../');
 
-if(filter_var(@getenv('DEBUG'), FILTER_VALIDATE_BOOLEAN)) {
+if (filter_var(@getenv('DEBUG'), FILTER_VALIDATE_BOOLEAN)) {
     ini_set('display_errors', 1);
     ini_set('display_startup_errors', 1);
     error_reporting(E_ALL);
 }
 
-//Basic Auth
-$login = $_SERVER['PHP_AUTH_USER'] ?? ''; //Username
-
-$password = $_SERVER['PHP_AUTH_PW'] ?? ''; //Password
 
 $request = Request::getInstance();
 
-(new Api($login, $password))->routing([
+(new Api())->routing([
     '/getUsers' => new Route(['GET', 'POST'], false, [
         'filter' => $request->filter,
         'sort' => $request->sort,
         'select' => $request->select,
-        ]),
+    ]),
     '/getUser/%id%' => new Route('GET', true),
     '/addUser' => new Route('POST', true, [
         'name' => $request->name,
         'email' => $request->email,
     ]),
     '/deleteUser/%id%' => new Route('DELETE', true),
+    '/getToken' => new Route('GET', false),
 ]);

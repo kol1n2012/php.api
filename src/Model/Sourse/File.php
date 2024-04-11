@@ -1,8 +1,8 @@
 <?php
 
-namespace App;
+namespace App\Model\Sourse;
 
-class CollectionFile
+class File
 {
     private string $fileName;
 

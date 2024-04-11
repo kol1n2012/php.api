@@ -2,6 +2,7 @@
 
 namespace App\Server;
 
+use App\HTTP\Request;
 use App\HTTP\Response;
 use JetBrains\PhpStorm\NoReturn;
 use App\Server\Api\Route;
@@ -9,20 +10,6 @@ use App\Server\Api\Methods as ApiMethods;
 
 class Api
 {
-    /**
-     * @var string
-     */
-    private string $token = '';
-
-    /**
-     * @var string
-     */
-    private string $login = '';
-
-    /**
-     * @var string
-     */
-    private string $password = '';
 
     /**
      * @var string
@@ -39,40 +26,46 @@ class Api
      */
     private array $url = [];
 
-    /**
-     * @param string $login
-     * @param string $password
-     */
-    public function __construct(string $login = '', string $password = '')
+    public function __construct()
     {
         $this->setUrl();
-
-        $this->setLogin($login);
-
-        $this->setPassword($password);
     }
 
     /**
+     * @param bool $isGetToken
      * @return void
      */
-    private function checkAuth(): void
+    private function checkAuth(bool $isGetToken = false): void
     {
-        $login = $this->getLogin();
-        $password = $this->getPassword();
+        $request = Request::getInstance();
 
-        if (!mb_strlen($login) && !mb_strlen($password)) $this->setError('Логин и пароль пустой');
+        if ($request->isToken()) {
+            if (!$request->checkToken()) {
+                $this->setError('Не действительный токен');
+            }
 
-        if (!mb_strlen($login)) $this->setError('Логин пустой');
+            $this->setStatus(true);
+        } else {
 
-        if ($login !== getenv('API_LOGIN')) $this->setError('Логин не верный');
+            $login = $request->getLogin();
 
-        $this->setLogin($login);
+            $password = $request->getPassword();
 
-        if (!mb_strlen($password)) $this->setError('Пароль пустой');
+            if (!mb_strlen($login) && !mb_strlen($password)) $this->setError('Логин и пароль пустой');
 
-        if ($password !== getenv('API_PASSWORD')) $this->setError('Пароль не верный');
+            if (!mb_strlen($login)) $this->setError('Логин пустой');
 
-        $this->setToken();
+            if ($login !== getenv('API_LOGIN')) $this->setError('Логин не верный');
+
+            if (!mb_strlen($password)) $this->setError('Пароль пустой');
+
+            if ($password !== getenv('API_PASSWORD')) $this->setError('Пароль не верный');
+
+            if (!$isGetToken) {
+                $this->setError('Требуется токен для получения доступа');
+            }
+        }
+
     }
 
     /**
@@ -110,45 +103,6 @@ class Api
         $response->setMessage($this->getMessage());
     }
 
-    /**
-     * @return bool
-     */
-    private function isToken(): bool
-    {
-        return mb_strlen($this->token) ?? false;
-    }
-
-    /**
-     * @param string $login
-     * @return void
-     */
-    private function setLogin(string $login = ''): void
-    {
-        if (!mb_strlen($login)) return;
-
-        $this->login = $login;
-    }
-
-    /**
-     * @param string $password
-     * @return void
-     */
-    private function setPassword(string $password = ''): void
-    {
-        if (!mb_strlen($password)) return;
-
-        $this->password = $password;
-    }
-
-    /**
-     * @return void
-     */
-    private function setToken(): void
-    {
-        $this->token = md5(getenv('API_TOKEN'));
-
-        $this->setStatus(true);
-    }
 
     /**
      * @param bool $status
@@ -256,14 +210,6 @@ class Api
     }
 
     /**
-     * @return string
-     */
-    public function getToken(): string
-    {
-        return $this->token ?? '';
-    }
-
-    /**
      * @return bool
      */
     public function getStatus(): bool
@@ -279,22 +225,22 @@ class Api
         return $this->message ?? '';
     }
 
-    /**
-     * @return string
-     */
-    private function getLogin(): string
-    {
-        return $this->login ?? "";
-    }
-
-    /**
-     * @return string
-     */
-    private function getPassword(): string
-    {
-        return $this->password ?? "";
-    }
-
-
     use ApiMethods;
+
+    /**
+     * @return void
+     */
+    public function getToken(): void
+    {
+        $this->checkAuth(true);
+
+        $request = Request::getInstance();
+
+        $token = $request->saveToken();
+
+        $this->setStatus(true);
+        $this->setMessage('Успешно');
+
+        $this->__response(json_encode(['token' => $token], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+    }
 }

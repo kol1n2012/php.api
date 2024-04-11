@@ -2,9 +2,9 @@
 
 namespace App\Server\Api;
 
+use App\Entities\User;
 use App\HTTP\Request;
-use App\User;
-use App\UserCollection;
+use App\Model\Users;
 
 trait Methods
 {
@@ -17,7 +17,7 @@ trait Methods
     {
         switch ((Request::getInstance())->getMethod()) {
             case 'GET':
-                $users = new UserCollection();
+                $users = new Users();
 
                 $this->setStatus(true);
                 $this->setMessage('Успешно');
@@ -45,7 +45,7 @@ trait Methods
 
                 $id = $data['id'];
 
-                $users = new UserCollection(['filter' => ['id' => $id]]);
+                $users = new Users(['filter' => ['id' => $id]]);
 
                 if (count($users = $users->getCollection())) {
                     $user = array_shift($users);
@@ -84,7 +84,7 @@ trait Methods
 
                 $email = $data['email'];
 
-                $users = new UserCollection();
+                $users = new Users();
 
                 if ($users->checkEmail($email)) $this->setError('Пользователь с таким email уже существует', 415);
 
@@ -116,12 +116,12 @@ trait Methods
 
                 $id = $data['id'];
 
-                $users = new UserCollection(['filter' => ['id' => $id]]);
+                $users = new Users(['filter' => ['id' => $id]]);
 
                 if (count($users = $users->getCollection())) {
                     $user = array_shift($users);
 
-                    (new UserCollection())->delete($user);
+                    (new Users())->delete($user);
 
                     $this->setMessage('Успешно');
                     $this->__response("$user");
@@ -134,5 +134,4 @@ trait Methods
                 break;
         }
     }
-
 }
