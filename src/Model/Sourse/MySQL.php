@@ -101,7 +101,7 @@ final class Mysql
      * @param mixed $order
      * @return void
      */
-    public function setOrder(mixed $order)
+    public function setSelect(mixed $order)
     {
     }
 
