@@ -119,6 +119,7 @@ trait Methods
                 $users = new Users(['filter' => ['id' => $id]]);
 
                 if (count($users = $users->getCollection())) {
+
                     $user = array_shift($users);
 
                     (new Users())->delete($user);

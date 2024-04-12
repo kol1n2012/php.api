@@ -2,44 +2,60 @@
 
 namespace App\Model\Sourse;
 
-class File
+final class File
 {
+
     /**
      * @var string
      */
-    private string $sourse;
+    private string $entity;
+
+    public function __construct(string $entity = '')
+    {
+        $this->setEntity($entity);
+
+        $this->setCollection();
+    }
 
     /**
-     * @param string $sourse
      * @return void
      */
-    protected function setCollection(string $sourse = ''): void
+    protected function setCollection(): void
     {
-        if (!mb_strlen($sourse)) return;
+        $entity = $this->getEntity();
 
-        $this->sourse = $sourse;
+        if (!mb_strlen($entity)) return;
 
-        $collection = @json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/' . $sourse.'.json'), true) ?? [];
+        $collection = @json_decode(file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/' . $entity.'.json'), true) ?? [];
+
+        $entity = 'App\\Model\\' . \ucwords($entity);
 
         foreach ($collection as $item) {
-            $this->collection[] = $this->__convert($item);
+            $this->collection[] = $entity::convert($item);
         }
+    }
 
+    /**
+     * @param string $entity
+     * @return void
+     */
+    private function setEntity(string $entity)
+    {
+        $this->entity = $entity;
     }
 
     /**
      * @param array $filter
      * @return void
      */
-    protected function setFilter(array $filter = []): void
+    public function setFilter(array $filter = []): void
     {
-        $collection = $this->collection;
+        $collection = $this->getCollection();
 
         $collection = array_filter($collection, function ($item) use ($filter) {
+            $symbolList = ['not' => '!'];
 
             $return = false;
-
-            $symbolList = ['not' => '!'];
 
             foreach ($filter as $key => $f) {
                 if ($return) continue;
@@ -50,7 +66,7 @@ class File
                     $symbol = $symbolList['not'];
                 }
 
-                $value = '';
+                $value = null;
 
                 switch ($key) {
                     case $symbol . 'id':
@@ -88,7 +104,7 @@ class File
      * @param mixed $order
      * @return void
      */
-    protected function setOrder(mixed $order)
+    public function setOrder(mixed $order)
     {
     }
 
@@ -96,7 +112,7 @@ class File
      * @param mixed $sort
      * @return void
      */
-    protected function setSort(mixed $sort)
+    public function setSort(mixed $sort)
     {
     }
 
@@ -104,7 +120,7 @@ class File
      * @param int $limit
      * @return void
      */
-    protected function setLimit(int $limit)
+    public function setLimit(int $limit)
     {
     }
 
@@ -117,32 +133,52 @@ class File
     }
 
     /**
+     * @return string
+     */
+    private function getEntity(): string
+    {
+        return $this->entity ?? "";
+    }
+
+    /**
      * @param $item
      * @return void
      */
-    protected function __add($item): void
+    public function add($item): void
     {
         $this->collection[] = $item;
 
-        $this->__save();
+        $this->save();
     }
 
     /**
      * @param int $id
      * @return void
      */
-    protected function __delete(int $id = 0): void
+    public function delete(int $id = 0): void
     {
-        $this->setFilter(['!id' => $id]);
+        $this->setFilter(["!id" => $id]);
 
-        $this->__save();
+        $this->save();
     }
 
     /**
      * @return void
      */
-    private function __save(): void
+    private function save(): void
     {
-        file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/' . $this->sourse.'.json', "$this");
+        file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/' . $this->getEntity().'.json', "$this");
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        $collection = $this->getCollection();
+
+        $collection = implode(',', $collection);
+
+        return "[$collection]";
     }
 }

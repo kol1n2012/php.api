@@ -3,75 +3,19 @@
 namespace App\Model;
 
 use App\Entities\User;
-use App\Model\Sourse\File as FromFile;
-use App\Model\Sourse\MySQL as FromMySQL;
 
-
-class Users extends FromFile
-//class Users extends FromMySQL
+class Users extends Collection
 {
     /**
-     * @var array
+     * @param array $query
      */
-    protected array $filter = [];
-
-    /**
-     * @var array
-     */
-    protected array $sort = [];
-
-    /**
-     * @var array
-     */
-    protected array $order = [];
-
-    /**
-     * @var array
-     */
-    protected array $collection = [];
-
-    /**
-     * @param array $data
-     */
-    public function __construct(array $data = [])
+    public function __construct(array $query = [])
     {
-        $this->setCollection('users');
+        $this->setEntity('users');
 
-        if ($filter = @$data['filter']) {
-            $this->setFilter($filter);
-        }
+        $this->setSourse('file');
 
-        //TODO select collection
-        if ($select = @$data['select']) {
-            $this->setSelect($select);
-        }
-
-        //TODO sort collection
-        if ($sort = @$data['sort']) {
-            $this->setSort($sort);
-        }
-
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString(): string
-    {
-        $collection = $this->getCollection();
-
-        $collection = implode(',', $collection);
-
-        return "[$collection]";
-    }
-
-    /**
-     * @param array $user
-     * @return User
-     */
-    protected function __convert(array $user = []): User
-    {
-        return new User($user['id'], $user['name'], $user['email']);
+        parent::__construct($query);
     }
 
     /**
@@ -80,7 +24,7 @@ class Users extends FromFile
      */
     public function checkEmail(string $email = ''): bool
     {
-        $mailList = array_map(fn($user) => $user->getEmail(), $this->getCollection());
+        $mailList = array_map(fn($user) => $user->getEmail(), $this->getStorage()->getCollection());
 
         if (in_array($email, $mailList)) $return = true;
 
@@ -88,20 +32,14 @@ class Users extends FromFile
     }
 
     /**
-     * @param User $user
-     * @return void
+     * @param array $data
+     * @return User
      */
-    public function add(User $user = new User): void
+    public static function convert(array $data = []): User
     {
-        parent::__add($user);
-    }
+        $user = new User;
+        $user->convert($data);
 
-    /**
-     * @param User $user
-     * @return void
-     */
-    public function delete(User $user = new User): void
-    {
-        parent::__delete($user->getId());
+        return $user;
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Model\Sourse;
 
-class MySQL
+final class Mysql
 {
     /**
      * @var \mysqli
@@ -12,24 +12,40 @@ class MySQL
     /**
      * @var string
      */
-    private string $sourse;
+    private string $entity;
 
     /**
      * @var string
      */
     private string $sql;
 
+    public function __construct(string $entity = '')
+    {
+        $this->setEntity($entity);
+
+        $this->setCollection();
+    }
+
+
     /**
-     * @param string $sourse
      * @return void
      */
-    protected function setCollection(string $sourse = ''): void
+    protected function setCollection(): void
     {
-        if (!mb_strlen($sourse)) return;
+        $entity = $this->getEntity();
 
-        $this->sourse = $sourse;
+        if (!mb_strlen($entity)) return;
 
-        $this->sql = "SELECT * FROM $sourse";
+        $this->sql = "SELECT * FROM $entity";
+    }
+
+    /**
+     * @param string $entity
+     * @return void
+     */
+    private function setEntity(string $entity): void
+    {
+        $this->entity = $entity;
     }
 
     /**
@@ -53,7 +69,7 @@ class MySQL
      * @param array $filter
      * @return void
      */
-    protected function setFilter(array $filter = []): void
+    public function setFilter(array $filter = []): void
     {
         if(count($filter)){
 
@@ -85,7 +101,7 @@ class MySQL
      * @param mixed $order
      * @return void
      */
-    protected function setOrder(mixed $order)
+    public function setOrder(mixed $order)
     {
     }
 
@@ -93,7 +109,7 @@ class MySQL
      * @param mixed $sort
      * @return void
      */
-    protected function setSort(mixed $sort)
+    public function setSort(mixed $sort)
     {
     }
 
@@ -101,7 +117,7 @@ class MySQL
      * @param int $limit
      * @return void
      */
-    protected function setLimit(int $limit)
+    public function setLimit(int $limit)
     {
     }
 
@@ -112,35 +128,41 @@ class MySQL
     {
         $this->collection = [];
 
+        $entity = $this->getEntity();
+        $entity = 'App\\Model\\' . \ucwords($entity);
+
         if($collection = ($this->getHandler())->query($this->sql)){
             foreach ($collection as $item) {
-                $this->collection[] = $this->__convert($item);
+                $this->collection[] = is_array($item) ? $entity::convert($item): $item;
             }
         }
 
         return $this->collection ?? [];
     }
 
+    /**
+     * @return string
+     */
+    private function getEntity(): string
+    {
+        return $this->entity ?? "";
+    }
 
     /**
      * @param $data
      * @return void
      */
-    protected function __add($data): void
+    public function add($data): void
     {
         $data = $data->getValidData();
 
-        if(isset($data['id'])){
-            unset($data['id']);
-        }
-
-        $sql = sprintf("INSERT INTO %s ", $this->sourse);
+        if(isset($data['id'])) unset($data['id']);
 
         $keys = implode(',',array_keys($data));
-        $values = implode("','",array_values($data));
-        $values = "'$values'";
 
-        $sql .= "($keys) VALUES ($values)";
+        $values = implode("','",array_values($data));
+
+        $sql = sprintf("INSERT INTO %s (%s) VALUES ('%s')", $this->entity, $keys, $values);
 
         ($this->getHandler())->query($sql);
     }
@@ -149,12 +171,24 @@ class MySQL
      * @param int $id
      * @return void
      */
-    protected function __delete(int $id = 0): void
+    public function delete(int $id = 0): void
     {
         if(!$id) return;
 
-        $sql = sprintf("DELETE FROM %s WHERE id = %d", $this->sourse, $id);
+        $sql = sprintf("DELETE FROM %s WHERE id = %d", $this->entity, $id);
 
         ($this->getHandler())->query($sql);
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        $collection = $this->getCollection();
+
+        $collection = implode(',', $collection);
+
+        return "[$collection]";
     }
 }

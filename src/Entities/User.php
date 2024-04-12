@@ -34,6 +34,17 @@ class User
     }
 
     /**
+     * @param array $data
+     * @return void
+     */
+    public function convert(array $data = []): void
+    {
+        $this->setId(@$data['id'] ?? 0);
+        $this->setName(@$data['name'] ?? '');
+        $this->setEmail(@$data['email'] ?? '');
+    }
+
+    /**
      * @param string $name
      * @return void
      */

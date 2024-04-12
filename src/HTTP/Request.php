@@ -97,9 +97,13 @@ final class Request
     {
         if (!$this->isToken()) return false;
 
+        @session_start();
+
+        $id = @session_id();
+
         $token = $this->getToken();
 
-        $file = $_SERVER['DOCUMENT_ROOT'] . '/tmp/token/' . $token;
+        $file = $_SERVER['DOCUMENT_ROOT'] . '/tmp/token/' . $id;
 
         if (!file_exists($file)) return false;
 
@@ -171,7 +175,9 @@ final class Request
 
         $token = $header_and_payload_combined . '.' . $signature;
 
-        file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/tmp/token/' . $token, $token);
+        $filepath = $_SERVER['DOCUMENT_ROOT'] . '/tmp/token/' . $id;
+
+        file_put_contents($filepath, $token);
 
         $this->setToken($token);
 
