@@ -13,7 +13,9 @@ class Users extends Collection
     {
         $this->setEntity('users');
 
-        $this->setSourse('file');
+        $sourse = getenv('DATA_SOURSE_DRIVER') ?? 'file';
+
+        $this->setSourse($sourse);
 
         parent::__construct($query);
     }
