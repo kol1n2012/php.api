@@ -1,3 +1,11 @@
-RewriteEngine on
+<If "%{REQUEST_URI} =~ m#/api/getToken#">
+AuthType Basic
+AuthUserFile C:\webserver\OSPanel\domains\test\api\.htpasswd
+AuthGroupFile /dev/null
+AuthName "Restricted Access"
+Require valid-user
+</If>
 
+
+RewriteEngine on
 RewriteRule ^((?!index\.php).+)$ index.php [L]

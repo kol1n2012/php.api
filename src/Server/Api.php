@@ -243,4 +243,9 @@ class Api
 
         $this->__response(json_encode(['token' => $token], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
     }
+
+    function __destruct()
+    {
+        exit;
+    }
 }
