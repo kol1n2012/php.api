@@ -85,7 +85,7 @@ final class Response
     /**
      * @return void
      */
-    private function __wakeup(): void
+    public function __wakeup(): void
     {
     }
 
